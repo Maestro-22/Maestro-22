@@ -1666,7 +1666,7 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'quitarpoder':
     case 'quitaradmin':
       if (!text) {
-        text = (chat.sDemote || tradutor.texto4 || conn.sdemote || '@user ```is no longer Admin```');
+        text = (chat.sDemote || tradutor.texto4 || conn.sdemote || '@user لم تعد مشرفاً! 🧞‍♂️ تم سحب الإشراف من قبل @initiator');
       }
       text = text.replace('@user', '@' + participants[0].split('@')[0]);
       if (chat.detect && !chat?.isBanned) {

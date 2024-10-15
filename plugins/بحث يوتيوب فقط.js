@@ -5,41 +5,53 @@ const {
   proto
 } = (await import("@whiskeysockets/baileys")).default;
 
-let handler = async (message, { conn, text, usedPrefix, command }) => {
+let handler = async (message, { conn, text }) => {
   if (!text) {
     return conn.reply(message.chat, "[❗] *شكلك نسيت تحط نص user@ \n ادخل نصا لاستطيع البحث علي يوتيوب?*", message);
   }
 
-  async function generateVideoMessage(url, title, thumbnail) {
-    const { imageMessage } = await generateWAMessageContent({ 'image': { 'url': thumbnail } }, { 'upload': conn.waUploadToServer });
+  // إظهار الرمز التعبيري فور كتابة الأمر
+  await conn.sendMessage(message.chat, { react: { text: '🔍', key: message.key } });
+
+  // تصفية نتائج البحث بناءً على دقة الفيديو والمدة الزمنية
+  let filterOptions = ['480p', '720p', '1080p', 'قصير', 'طويل'];
+  let filterButtons = filterOptions.map(option => ({
+    buttonId: `filter_${option}`,
+    buttonText: { displayText: option },
+    type: 1
+  }));
+
+  let searchResults = await ytSearch(text);
+  let videos = searchResults.videos.slice(0, 6); // عرض 6 فيديوهات فقط
+
+  async function generateVideoMessage(video) {
+    const { imageMessage } = await generateWAMessageContent({ 'image': { 'url': video.thumbnail } }, { 'upload': conn.waUploadToServer });
     return {
-      title,
-      url,
-      imageMessage
+      title: video.title,
+      url: video.url,
+      imageMessage: imageMessage,
+      channelName: video.author.name,
+      views: video.views,
+      duration: video.timestamp,
+      resolution: video.resolution || 'غير معروف', // لا يوفر yt-search معلومات الدقة، يمكن تحديث المكتبة لاحقاً
+      uploadDate: video.ago
     };
   }
 
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
-
   let results = [];
-  let searchResults = await ytSearch(text);
-  let videos = searchResults.videos.slice(0, 5);
-
-  shuffleArray(videos);
-
   for (let video of videos) {
-    let videoMessage = await generateVideoMessage(video.url, video.title, video.thumbnail);
+    let videoMessage = await generateVideoMessage(video);
     results.push({
       'body': proto.Message.InteractiveMessage.Body.fromObject({
-        'text': videoMessage.title
+        'text': `${videoMessage.title}\n\n` +
+                `📺 *القناة:* ${videoMessage.channelName}\n` +
+                `👁️ *المشاهدات:* ${videoMessage.views}\n` +
+                `⏰ *المدة:* ${videoMessage.duration}\n` +
+                `📅 *نشر في:* ${videoMessage.uploadDate}\n` +
+                `🖥️ *الدقة:* ${videoMessage.resolution}`
       }),
       'footer': proto.Message.InteractiveMessage.Footer.fromObject({
-        'text': "𝐆𝐎𝐉𝐎⚡𝐁𝐎𝐓"
+        'text': "『 🄱🄾🅃 🄰🄻🄼🅄🅂🄰🄱🄸 』"
       }),
       'header': proto.Message.InteractiveMessage.Header.fromObject({
         'title': '',
@@ -58,6 +70,7 @@ let handler = async (message, { conn, text, usedPrefix, command }) => {
     });
   }
 
+  // إضافة الرسالة التفاعلية مع تصفية النتائج
   const messageContent = generateWAMessageFromContent(message.chat, proto.Message.fromObject({
     'viewOnceMessage': {
       'message': {
@@ -67,14 +80,17 @@ let handler = async (message, { conn, text, usedPrefix, command }) => {
         },
         'interactiveMessage': proto.Message.InteractiveMessage.fromObject({
           'body': proto.Message.InteractiveMessage.Body.fromObject({
-            'text': "[❗] النتيجه لي ❤🎦 : " + text
+            'text': `🧞‍♂️ النتيجة لي\n\`🔎 『   ${text}   』\``
           }),
           'footer': proto.Message.InteractiveMessage.Footer.fromObject({
-            'text': "🔎 `Y O U T U B E - S E A R C H`"
+            'text': "اختر فلتر النتائج حسب المدة أو الدقة:"
           }),
           'header': proto.Message.InteractiveMessage.Header.fromObject({
             'hasMediaAttachment': false
           }),
+          'interactiveButtonsMessage': {
+            'buttons': filterButtons
+          },
           'carouselMessage': proto.Message.InteractiveMessage.CarouselMessage.fromObject({
             'cards': results
           })

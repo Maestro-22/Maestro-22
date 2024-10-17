@@ -8,7 +8,7 @@ import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysoc
 const handler = async (m, { command, usedPrefix, conn, args, text }) => {
  
     if (!text) {
-      await conn.sendMessage(m.chat, { text: `*❲ ❗ ❳ يرجي إدخال نص للبحث عن الأغنية .*\nمثال :\n> ➤  ${usedPrefix + command} القرآن الكريم\n> ➤  ${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p` }, { quoted: m });
+      await conn.sendMessage(m.chat, { text: `*❲ ❗ ❳ يرجي إدخال نص للبحث  🧞 .*\nمثال :\n> ➤  ${usedPrefix + command} القرآن الكريم\n> ➤  ${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p` }, { quoted: m });
       await conn.sendMessage(m.chat, { react: { text: '❗', key: m.key } });
       return;
     }
@@ -17,7 +17,7 @@ const handler = async (m, { command, usedPrefix, conn, args, text }) => {
     try {
       const yt_play = await search(args.join(' '));
       
-      const dataMessage = `*❲ نتيجة البحث عن : ${text} ❳*\n➤ العنوان : ${yt_play[0].title}\n➤ النشر : ${yt_play[0].ago}\n➤ الطول : ${secondString(yt_play[0].duration.seconds)}\n➤ الرابط : ${yt_play[0].url}\n➤ المشاهدات : ${MilesNumber(yt_play[0].views)}\n➤ الصانع : ${yt_play[0].author.name}\n➤ القناة : ${yt_play[0].author.url}\n> انتظر جاري تحميل الاغنيه ...`.trim();
+      const dataMessage = `*❲ نتيجة البحث عن : ${text} ❳*\n➤ العنوان : ${yt_play[0].title}\n➤ النشر : ${yt_play[0].ago}\n➤ الطول : ${secondString(yt_play[0].duration.seconds)}\n➤ الرابط : ${yt_play[0].url}\n➤ المشاهدات : ${MilesNumber(yt_play[0].views)}\n➤ الصانع : ${yt_play[0].author.name}\n➤ القناة : ${yt_play[0].author.url}\n> انتظر جاري تحميل  🧞 ...`.trim();
 
       const iturl = yt_play[0].url;
       const itimg = yt_play[0].thumbnail;
@@ -45,13 +45,13 @@ const handler = async (m, { command, usedPrefix, conn, args, text }) => {
              conn.sendMessage(m.chat, { video: { url: videoUrl }, mimetype: 'video/mp4', fileName: title + '.mp4', caption: `العنوان : ${title}\n`}, {quoted: m});
           } catch {
           
-            await conn.reply(m.chat, '*❲ ❗ ❳ حدث خطأ عند جلب الاغنيه.*', m);
+            await conn.reply(m.chat, '*❲ ❗ ❳ حدث خطأ عند جلب  🧞.*', m);
           }
         
       
       
         } catch {
-      await conn.sendMessage(m.chat, { text: `*❲ ❗ ❳ حدث خطأ عند البحث عن الأغنية .*\nيرجي ادخال نص صحيح أو رابط مثال :\n> ➤  ${usedPrefix + command} القرآن الكريم\n> ➤  ${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p` }, { quoted: m });
+      await conn.sendMessage(m.chat, { text: `*❲ ❗ ❳ حدث خطأ عند البحث  🧞 .gps 1| .*\nيرجي ادخال نص صحيح أو رابط مثال :\n> ➤  ${usedPrefix + command} القرآن الكريم\n> ➤  ${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p` }, { quoted: m });
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
     }
       

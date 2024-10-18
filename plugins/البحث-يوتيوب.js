@@ -13,14 +13,11 @@ import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '
 import yts from 'yt-search';
 import fs from 'fs';
 
-const handler = async (m, { conn, text, usedPrefix: prefijo }) => {
-    const datas = global;
-    const idioma = datas.db.data.users[m.sender].language;
-    const _translate = JSON.parse(fs.readFileSync(`./language/${idioma}.json`));
-    const traductor = _translate.plugins.buscador_yts;
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+    
     const device = await getDevice(m.key.id);
     
-  if (!text) throw `⚠️ *${traductor.texto1}*`;
+  if (!text) throw `*❲ ❗ ❳ يرجي إدخال نص للبحث في اليوتيوب .*\nمثال :\n> ➤  ${usedPrefix + command} القرآن الكريم\n> ➤  ${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p`;
     
   if (device !== 'desktop' || device !== 'web') {      
   await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
@@ -30,47 +27,75 @@ const handler = async (m, { conn, text, usedPrefix: prefijo }) => {
   const randomIndex = Math.floor(Math.random() * videos.length);
   const randomVideo = videos[randomIndex];
 
-  var messa = await prepareWAMessageMedia({ image: {url: randomVideo.thumbnail}}, { upload: conn.waUploadToServer })
+  var messa = await prepareWAMessageMedia({ image: {url: randomVideo.thumbnail}}, { upload: conn.waUploadToServer });
+  
+  const imagurl = 'https://files.catbox.moe/hm0l6b.jpg';
+ 
+ let chname = '⛊  𝚂𝙰𝚈𝙴𝙳-𝚂𝙷𝙰𝚆𝙰𝚉𝙰';
+ let chid = '120363316635505389@newsletter';
+  
+  const captain = `*⎙ نتائج البحث:* ${results.videos.length}\n\n*⛊ النتيجة:*\n*-› العنوان:* ${randomVideo.title}\n*-› الصانع:* ${randomVideo.author.name}\n*-› المشاهدات:* ${randomVideo.views}\n*-› الرابط:* ${randomVideo.url}\n*-› البوستر:* ${randomVideo.thumbnail}\n\n> 🗃️اختر من القائمه بالاسفل🧞.\n\n`.trim();
+  
   const interactiveMessage = {
-    body: { text: `*—◉ Resultados obtenidos:* ${results.videos.length}\n*—◉ Video aleatorio:*\n*-› Title:* ${randomVideo.title}\n*-› Author:* ${randomVideo.author.name}\n*-› Views:* ${randomVideo.views}\n*-› Link:* ${randomVideo.url}\n*-› Imagen:* ${randomVideo.thumbnail}`.trim() },
+    body: { text: captain },
     footer: { text: `${global.wm}`.trim() },  
       header: {
-          title: `*< بحث اليوتيوب >*\n`,
+          title: `*❲ بحث اليوتيوب ❳*\n`,
           hasMediaAttachment: true,
           imageMessage: messa.imageMessage,
+      },
+      contextInfo: {
+        mentionedJid: await conn.parseMention(captain), 
+        isForwarded: true, 
+        forwardingScore: 1, 
+        forwardedNewsletterMessageInfo: {
+        newsletterJid: chid, 
+        newsletterName: chname, 
+        serverMessageId: 100
+        },
+        externalAdReply: {
+        showAdAttribution: true,
+          title: "⋄┄〘 بحــث اليــوتيوب 〙┄⋄",
+          body: "❲ التحــميلات ❳",
+          thumbnailUrl: imagurl,
+          mediaUrl: imagurl,
+          mediaType: 1,
+          sourceUrl: 'https://www.atom.bio/shawaza-2000/',
+          renderLargerThumbnail: false
+        }
       },
     nativeFlowMessage: {
       buttons: [
         {
           name: 'single_select',
           buttonParamsJson: JSON.stringify({
-            title: 'قائمة النتائج',
+            title: '❲ قائمة النتائج ❳',
             sections: videos.map((video) => ({
               title: video.title,
               rows: [
                 {
                   header: video.title,
                   title: video.author.name,
-                  description: '🎧 صـوت',
-                  id: `${prefijo}mp3.1 ${video.url}`
+                  description: '〘 🎧 صــوتي 〙',
+                  id: `${usedPrefix}اغنيه ${video.url}`
                 },
                   {
                   header: video.title,
                   title: video.author.name,
-                  description: '📼 ملـف صـوت',
-                  id: `${prefijo}mp3.2 ${video.url}`
+                  description: '〘 🎥 فيــديو 〙',
+                  id: `${usedPrefix}فيديو ${video.url}`
                 },
                 {
                   header: video.title,
                   title: video.author.name,
-                  description: '🎥 فيـديو',
-                  id: `${prefijo}mp4.1 ${video.url}`
+                  description: '〘 🎤 فــويس 〙',
+                  id: `${usedPrefix}ريك ${video.url}`
                 },                
                   {
                   header: video.title,
                   title: video.author.name,
-                  description: '🎬 ملـف فيـديو',
-                  id: `${prefijo}mp4.2 ${video.url}`
+                  description: '〘 📹 جيــف 〙',
+                  id: `${usedPrefix}جيف ${video.url}`
                 }
               ]
             }))
@@ -93,22 +118,21 @@ const handler = async (m, { conn, text, usedPrefix: prefijo }) => {
       conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id});
 
   } else {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language;
-  const _translate = JSON.parse(fs.readFileSync(`./language/${idioma}.json`));
-  const traductor = _translate.plugins.buscador_yts;      
+  
   const results = await yts(text);
   const tes = results.all;
+  
   const teks = results.all.map((v) => {
     switch (v.type) {
       case 'video': return `
-° *_${v.title}_*
-↳ 🫐 *_${traductor.texto2[0]}_* ${v.url}
-↳ 🕒 *_${traductor.texto2[1]}_* ${v.timestamp}
-↳ 📥 *_${traductor.texto2[2]}_* ${v.ago}
-↳ 👁 *_${traductor.texto2[3]}_* ${v.views}`;
+° *العنوان:* ${v.title}
+↳ 🫐 *الرابط:* ${v.url}
+↳ 🕒 *المدة:* ${v.timestamp}
+↳ 📥 *منذ:* ${v.ago}
+↳ 👁 *المشاهدات:* ${v.views}`;
     }
   }).filter((v) => v).join('\n\n◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦\n\n');
+  
   conn.sendFile(m.chat, tes[0].thumbnail, 'error.jpg', teks.trim(), m);      
   }    
 };
